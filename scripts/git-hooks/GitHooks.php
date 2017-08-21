@@ -5,7 +5,7 @@
  * Contains \jover_be\drupal_code_check\GitHooks.
  */
 
-namespace jover_be\drupal_code_check;
+namespace geo0000\drupal_code_check;
 
 use Composer\Script\Event;
 use Symfony\Component\Filesystem\Filesystem;
@@ -18,7 +18,7 @@ class GitHooks {
     $composer = $event->getComposer();
     $vendorPath = $composer->getConfig()->get('vendor-dir');
 
-    $origin_dir = $vendorPath . '/jover_be/drupal-code-check/git-hooks';
+    $origin_dir = $vendorPath . '/geo0000/drupal-code-check/git-hooks';
     $target_dir = getcwd() . '/.git/hooks';
 
     $git_hooks = [

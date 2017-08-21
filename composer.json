@@ -1,9 +1,9 @@
 {
-	"name": "jover_be/drupal-code-check",
+	"name": "geo0000/drupal-code-check",
 	"type": "library",
 	"description": "A Git pre-commit hook to check Drupal Coding Standards and more.",
 	"keywords": ["drupal","git","pre-commit","standards","phpcs","code review"],
-	"homepage": "https://github.com/jover/drupal-code-check",
+	"homepage": "https://github.com/geo0000/drupal-code-check",
 	"license": "MIT",
 	"authors": [
 		{
@@ -26,10 +26,10 @@
 	},
 	"scripts": {
 		"pre-install-cmd": [
-			"jover_be\\drupal_code_check\\GitHooks::create"
+			"geo0000\\drupal_code_check\\GitHooks::create"
 		],
 		"post-update-cmd": [
-            "jover_be\\drupal_code_check\\GitHooks::create"
+            "geo0000\\drupal_code_check\\GitHooks::create"
         ]
 	}
 }
