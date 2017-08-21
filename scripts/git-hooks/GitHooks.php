@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \jover_be\drupal_code_check\GitHooks.
+ * Contains \geo0000\drupal_code_check\GitHooks.
  */
 
 namespace geo0000\drupal_code_check;
