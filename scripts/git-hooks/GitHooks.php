@@ -30,9 +30,6 @@ class GitHooks {
       $origin_file = $origin_dir . '/' . $git_hook;
       $target_file = $target_dir . '/' . $git_hook;
 
-      echo 'Origin file: ' . $origin_file . "\n";
-      echo 'Target file:' . $target_file . "\n";
-
       if ($fs->exists($origin_file)) {
         // Symlink the target to origin (force copy on Windows).
         $fs->symlink($origin_file, $target_file, TRUE);
