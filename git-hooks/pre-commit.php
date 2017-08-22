@@ -139,6 +139,7 @@ abstract class DrupalCodeCheck extends Application {
     ];
     $extension_pattern = '/(\.' . implode('$)|(\.', $allowed_extensions) . '$)/';
 
+    // TODO: change these paths.
     $excluded_paths = [
     // Drupal core files.
       'web\/core\/',

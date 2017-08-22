@@ -33,64 +33,46 @@ Note that files of the following origins are **not checked**:
 
 ### Installation
 
-Add this project as a composer dependency on your Composer based Drupal project.
-
-```bash
-composer require jover_be/drupal-code-check
-```
-
-And don't forget to update...
-
-```bash
-composer update jover_be/drupal-code-check
-```
-
-In order to activate the Git Hooks, update your composer.json file like following:
+Add this code to "repositories" part of composer.json
 
 ```
-{
-    "scripts": {
-        "post-install-cmd": [
-            "jover_be\\drupal_code_check\\GitHooks::create"
-        ],
-        "post-update-cmd": [
-        	"jover_be\\drupal_code_check\\GitHooks::create",
-        ]
-    }
-}
-```
-
-#### Development requirement
-
-In case you want to install it as a development requirement (_require-dev_),
-make use of the project _neronmoon/scriptsdev_ in order to execute the
-scripts only in case your project was installed in development mode.
-
-```bash
-composer require --dev neronmoon/scriptsdev
-composer require --dev jover_be/drupal-code-check
-```
-
-And instead, you should be using the _scripts-dev_ part as described by 
-
-```
-{
-    "extra": {
-        "scripts-dev": {
-            "post-install-cmd": [
-                "jover_be\\drupal_code_check\\GitHooks::create"
-            ],
-            "post-update-cmd": [
-                "jover_be\\drupal_code_check\\GitHooks::create",
-            ]
+    {
+      "type":"package",
+      "package": {
+        "name": "geo0000/drupal-code-check",
+        "version":"master",
+        "source": {
+          "url": "https://github.com/geo0000/drupal-code-check.git",
+          "type": "git",
+          "reference":"master"
+        },
+        "autoload": {
+          "classmap": ["/"]
+        },
+        "require": {
+          "php": ">=5.4",
+          "drupal/coder": "~8.2",
+          "symfony/console": "~2.8|~3.0",
+          "symfony/process": "~2.8|~3.0"
         }
+      }
     }
-}
 ```
 
-## Author
+Add this line to "require" part of composer.json
+```
+"geo0000/drupal-code-check": "master"
+```
 
-[jover.be](http://www.jover.be)
+Add this code to "scripts" part of composer.json
+```
+    "post-install-cmd": [
+      "geo0000\\drupal_code_check\\GitHooks::create"
+    ],
+    "post-update-cmd": [
+      "geo0000\\drupal_code_check\\GitHooks::create"
+    ]
+```
 
 ## License
 
