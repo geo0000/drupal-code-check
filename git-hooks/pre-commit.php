@@ -19,8 +19,15 @@ abstract class DrupalCodeCheck extends Application {
 
   protected $input;
   protected $output;
-
   protected $succeed;
+  protected $vendor_path;
+
+  private function getVendorPath() {
+    $reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
+    $vendorDir = dirname(dirname($reflection->getFileName()));
+
+    return $vendorDir;
+  }
 
   /**
    * {@inheritdoc}
@@ -28,6 +35,8 @@ abstract class DrupalCodeCheck extends Application {
   public function doRun(InputInterface $input, OutputInterface $output) {
     $this->input = $input;
     $this->output = $output;
+    // Vendor path.
+    $this->vendor_path = $this->getVendorPath();
 
     $this->setSucceed(TRUE);
 
@@ -180,9 +189,9 @@ abstract class DrupalCodeCheck extends Application {
 class DrupalPhpCodeCheck extends DrupalCodeCheck {
 
   // PHP Code Sniffer.
-  const PHPCS_BIN = 'vendor/bin/phpcs';
+  const PHPCS_BIN = 'html/vendor/bin/phpcs';
   // PHP Code Beautifier.
-  const PHPCBF_BIN = 'vendor/bin/phpcbf';
+  const PHPCBF_BIN = 'html/vendor/bin/phpcbf';
 
   // PHP syntax-error free code.
   const NO_SYNTAX_ERROR = 0;
@@ -254,22 +263,24 @@ class DrupalPhpCodeCheck extends DrupalCodeCheck {
     $succeed = TRUE;
 
     $processBuilder = new ProcessBuilder([
-      self::PHPCS_BIN,
+      $this->vendor_path . '/bin/phpcs',
       '--config-set',
       'installed_paths',
-      'vendor/drupal/coder/coder_sniffer',
+      $this->vendor_path . '/drupal/coder/coder_sniffer',
     ]);
     $process = $processBuilder->getProcess();
     $process->run();
 
     $processBuilder = new ProcessBuilder([
-      self::PHPCBF_BIN,
-      '--standard=./vendor/geo0000/drupal-code-check/DrupalCodeCheck',
+      $this->vendor_path . '/bin/phpcbf',
+      '--standard=' . $this->vendor_path . '/geo0000/drupal-code-check/DrupalCodeCheck',
       '-p',
       $file,
     ]);
     $process = $processBuilder->getProcess();
     $status = $process->run();
+
+    echo $status;
 
     if ($status == self::PHPCBF_PASSED) {
       $this->output->writeln('No formatting errors to be automatically fixed.');
@@ -306,8 +317,8 @@ class DrupalPhpCodeCheck extends DrupalCodeCheck {
     $succeed = TRUE;
 
     $processBuilder = new ProcessBuilder([
-      self::PHPCS_BIN,
-      '--standard=./vendor/geo0000/drupal-code-check/DrupalCodeCheck',
+      $this->vendor_path . '/bin/phpcs',
+      '--standard=' . $this->vendor_path . '/geo0000/drupal-code-check/DrupalCodeCheck',
       '-p',
       $file,
     ]);
