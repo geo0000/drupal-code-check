@@ -137,24 +137,10 @@ abstract class DrupalCodeCheck extends Application {
     // YAML files.
       'yml',
     ];
-    $extension_pattern = '/(\.' . implode('$)|(\.', $allowed_extensions) . '$)/';
-
-    // TODO: change these paths.
-    $excluded_paths = [
-    // Drupal core files.
-      'web\/core\/',
-    // Contributed library files.
-      'web\/libraries\/contrib\/',
-    // Contributed module files.
-      'web\/modules\/contrib\/',
-    // Contributed profile files.
-      'web\/profiles\/contrib\/',
-    // Contributed theme files.
-      'web\/themes\/contrib\/',
-    // Contributed drush files.
-      'drush\/contrib\/',
-    ];
     $excluded_path_pattern = '/(^' . implode('.+)|(^', $excluded_paths) . '.+)/';
+
+    // Ignore minimized js.
+    $excluded_file_path_pattern = '/(\.' . implode('$)|(\.', ['min.js']) . '$)/';
 
     foreach ($files as $index => $file) {
       // Keep files with allowed extensions.
@@ -164,6 +150,11 @@ abstract class DrupalCodeCheck extends Application {
 
       // Ignore files located in excluded paths.
       if (preg_match($excluded_path_pattern, $file)) {
+        unset($files[$index]);
+      }
+
+      // Ignore files located in excluded paths.
+      if (preg_match($excluded_file_path_pattern, $file)) {
         unset($files[$index]);
       }
     }
