@@ -114,29 +114,46 @@ abstract class DrupalCodeCheck extends Application {
    */
   protected function filterFiles($files) {
     $allowed_extensions = [
-    // Include files.
+      // Include files.
       'inc',
-    // Install files.
+      // Install files.
       'install',
-    // JavaScript files.
+      // JavaScript files.
       'js',
-    // MarkDown files.
+      // MarkDown files.
       'md',
-    // Module files.
+      // Module files.
       'module',
-    // Regular PHP files.
+      // Regular PHP files.
       'php',
-    // Profile files.
+      // Profile files.
       'profile',
-    // Test files.
+      // Test files.
       'test',
-    // Theme files.
+      // Theme files.
       'theme',
-    // Text files.
+      // Text files.
       'txt',
-    // YAML files.
+      // YAML files.
       'yml',
     ];
+    $extension_pattern = '/(\.' . implode('$)|(\.', $allowed_extensions) . '$)/';
+
+    $excluded_paths = [
+      // Drupal core files.
+      'web\/core\/',
+      // Contributed library files.
+      'web\/libraries\/contrib\/',
+      // Contributed module files.
+      'web\/modules\/contrib\/',
+      // Contributed profile files.
+      'web\/profiles\/contrib\/',
+      // Contributed theme files.
+      'web\/themes\/contrib\/',
+      // Contributed drush files.
+      'drush\/contrib\/',
+    ];
+
     $excluded_path_pattern = '/(^' . implode('.+)|(^', $excluded_paths) . '.+)/';
 
     // Ignore minimized js.
