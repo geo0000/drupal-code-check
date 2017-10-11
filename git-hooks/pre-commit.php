@@ -37,6 +37,10 @@ abstract class DrupalCodeCheck extends Application {
     $this->output = $output;
     $allRepo = $input->hasParameterOption('--allRepo', FALSE);
 
+    if (getenv('allRepo') == 'TRUE') {
+      $allRepo = TRUE;
+    }
+
     // Vendor path.
     $this->vendor_path = $this->getVendorPath();
 
@@ -113,6 +117,7 @@ abstract class DrupalCodeCheck extends Application {
   protected function processFiles($allRepo = FALSE) {
     $files = ($allRepo ? $this->fetchAllRepoFiles() : $this->fetchCommittedFiles());
 
+
     $files = $this->filterFiles($files);
 
     foreach ($files as $file) {
@@ -138,8 +143,6 @@ abstract class DrupalCodeCheck extends Application {
       'install',
       // JavaScript files.
       'js',
-      // MarkDown files.
-      'md',
       // Module files.
       'module',
       // Regular PHP files.
@@ -496,14 +499,12 @@ class DrupalCodeCheckApplication extends Application {
     $drupal_php_code_check = new DrupalPhpCodeCheck();
     $drupal_php_code_check->run($this->input, $this->output);
     if (!$drupal_php_code_check->getSucceed()) {
-	    $this->output->writeln('here 1');
       $this->succeed = FALSE;
     }
 
     $drupal_blacklisted_strings_check = new DrupalBlacklistedStringsCheck();
     $drupal_blacklisted_strings_check->run($this->input, $this->output);
     if (!$drupal_blacklisted_strings_check->getSucceed()) {
-	    $this->output->writeln('here 2');
       $this->succeed = FALSE;
     }
 
