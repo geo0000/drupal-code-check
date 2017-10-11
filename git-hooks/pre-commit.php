@@ -21,7 +21,7 @@ abstract class DrupalCodeCheck extends Application {
   protected $output;
   protected $succeed;
   protected $vendor_path;
-
+  
   private function getVendorPath() {
     $reflection = new \ReflectionClass(\Composer\Autoload\ClassLoader::class);
     $vendorDir = dirname(dirname($reflection->getFileName()));
@@ -35,6 +35,8 @@ abstract class DrupalCodeCheck extends Application {
   public function doRun(InputInterface $input, OutputInterface $output) {
     $this->input = $input;
     $this->output = $output;
+    $allRepo = $input->hasParameterOption('--allRepo', FALSE);
+
     // Vendor path.
     $this->vendor_path = $this->getVendorPath();
 
@@ -44,7 +46,7 @@ abstract class DrupalCodeCheck extends Application {
 
     $this->bootstrapMessage();
 
-    $this->processFiles();
+    $this->processFiles($allRepo);
   }
 
   /**
@@ -73,6 +75,20 @@ abstract class DrupalCodeCheck extends Application {
   abstract protected function bootstrapMessage();
 
   /**
+   * Fetching all Repo files.
+   *
+   * @return array
+   *   An array with all repo files.
+   */
+  protected function fetchAllRepoFiles() {
+    $output = array();
+
+    exec("git ls-files", $output);
+
+    return $output;
+  }
+
+  /**
    * Fetching the committed files.
    *
    * @return array
@@ -94,14 +110,16 @@ abstract class DrupalCodeCheck extends Application {
   /**
    * Process the files.
    */
-  protected function processFiles() {
-    $files = $this->fetchCommittedFiles();
+  protected function processFiles($allRepo = FALSE) {
+    $files = ($allRepo ? $this->fetchAllRepoFiles() : $this->fetchCommittedFiles());
+
     $files = $this->filterFiles($files);
 
     foreach ($files as $file) {
       $this->output->writeln('<info>Process file:</info> ' . $file);
 
-      if (!$this->processFile($file)) {
+      if (!$this->processFile($file, !$allRepo)) {
+        $this->output->writeln('not succed file:' . $file);
         $this->setSucceed(FALSE);
       }
 
@@ -141,20 +159,22 @@ abstract class DrupalCodeCheck extends Application {
 
     $excluded_paths = [
       // Drupal core files.
-      'web\/core\/',
+      'core\/',
       // Contributed library files.
-      'web\/libraries\/contrib\/',
+      'libraries\/contrib\/',
       // Contributed module files.
-      'web\/modules\/contrib\/',
+      'modules\/contrib\/',
+      // Custom features.
+      'modules\/features\/',
       // Contributed profile files.
-      'web\/profiles\/contrib\/',
+      'profiles\/contrib\/',
       // Contributed theme files.
-      'web\/themes\/contrib\/',
+      'themes\/contrib\/',
       // Contributed drush files.
-      'drush\/contrib\/',
+      'contrib\/',
     ];
 
-    $excluded_path_pattern = '/(^' . implode('.+)|(^', $excluded_paths) . '.+)/';
+    $excluded_path_pattern = '/(' . implode('.+)|(', $excluded_paths) . '.+)/';
 
     // Ignore minimized js.
     $excluded_file_path_pattern = '/(\.' . implode('$)|(\.', ['min.js']) . '$)/';
@@ -185,10 +205,13 @@ abstract class DrupalCodeCheck extends Application {
    * @param string $file
    *   Path to the file to be processed.
    *
+   * @param boolean $doFix
+   *   Do automated fixes.
+   *
    * @return bool
    *   Returns true or false whether the processing was successful or not.
    */
-  abstract protected function processFile($file);
+  abstract protected function processFile($file, $doFix = TRUE);
 
 }
 
@@ -228,7 +251,7 @@ class DrupalPhpCodeCheck extends DrupalCodeCheck {
   /**
    * {@inheritdoc}
    */
-  protected function processFile($file) {
+  protected function processFile($file, $doFix = TRUE) {
     $succeed = TRUE;
 
     $processBuilder = new ProcessBuilder(['php', '-l', $file, '>&2']);
@@ -236,13 +259,18 @@ class DrupalPhpCodeCheck extends DrupalCodeCheck {
     $status = $process->run();
 
     if ($status == self::NO_SYNTAX_ERROR) {
-      if ($this->codeFixer($file)) {
-        if (!$this->codeSniffer($file)) {
+      if ($doFix) {
+        if ($this->codeFixer($file)) {
+          if (!$this->codeSniffer($file)) {
+            $succeed = FALSE;
+          }
+        }
+        else {
           $succeed = FALSE;
         }
       }
       else {
-        $succeed = FALSE;
+        $succeed = $this->codeSniffer($file);
       }
     }
     else {
@@ -390,7 +418,7 @@ class DrupalBlacklistedStringsCheck extends DrupalCodeCheck {
   /**
    * {@inheritdoc}
    */
-  protected function processFile($file) {
+  protected function processFile($file, $doFix = TRUE) {
     $succeed = TRUE;
 
     $file_contents = file_get_contents($file);
@@ -401,7 +429,7 @@ class DrupalBlacklistedStringsCheck extends DrupalCodeCheck {
     }
 
     // \b = Any word boundary.
-    $pattern = '/\b(' . implode(')|\b(', $checks) . ')/';
+    $pattern = '/(' . implode(')|(', $checks) . ')/';
 
     if ($matches = preg_match_all($pattern, $file_contents, $output_array)) {
       $checks_found = [];
@@ -468,12 +496,14 @@ class DrupalCodeCheckApplication extends Application {
     $drupal_php_code_check = new DrupalPhpCodeCheck();
     $drupal_php_code_check->run($this->input, $this->output);
     if (!$drupal_php_code_check->getSucceed()) {
+	    $this->output->writeln('here 1');
       $this->succeed = FALSE;
     }
 
     $drupal_blacklisted_strings_check = new DrupalBlacklistedStringsCheck();
     $drupal_blacklisted_strings_check->run($this->input, $this->output);
     if (!$drupal_blacklisted_strings_check->getSucceed()) {
+	    $this->output->writeln('here 2');
       $this->succeed = FALSE;
     }
 
